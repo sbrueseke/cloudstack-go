@@ -58,6 +58,20 @@ var detailsRequireZeroIndex = map[string]bool{
 	"updateAccount":    true,
 }
 
+// requiresPost is a prefilled set of API names that require POST
+// for security or size purposes
+var requiresPostMethod = map[string]bool{
+	"login":                            true,
+	"deployVirtualMachine":             true,
+	"updateVirtualMachine":             true,
+	"createUser":                       true,
+	"updateUser":                       true,
+	"addVpnUser":                       true,
+	"registerUserData":                 true,
+	"setupUserTwoFactorAuthentication": true,
+	"validateUserTwoFactorAuthenticationCode": true,
+}
+
 var mapRequireList = map[string]map[string]bool{
 	"deployVirtualMachine": map[string]bool{
 		"dhcpoptionsnetworklist": true,
@@ -1380,6 +1394,13 @@ func (s *service) generateParamGettersAndSettersFunc(a *API) {
 			pn("}")
 			pn("")
 
+			pn("func (p *%s) Reset%s() {", capitalize(a.Name+"Params"), capitalize(ap.Name))
+			pn("	if p.p != nil && p.p[\"%s\"] != nil {", ap.Name)
+			pn("		delete(p.p, \"%s\")", ap.Name)
+			pn("	}")
+			pn("}")
+			pn("")
+
 			pn("func (p *%s) Get%s() (%s, bool) {", capitalize(a.Name+"Params"), capitalize(ap.Name), mapType(a.Name, ap.Name, ap.Type))
 			pn("	if p.p == nil {")
 			pn("		p.p = make(map[string]interface{})")
@@ -1698,7 +1719,7 @@ func (s *service) generateNewAPICallFunc(a *API) {
 		pn("		time.Sleep(500 * time.Millisecond)")
 		pn("	}")
 	} else {
-		if a.Name == "deployVirtualMachine" || a.Name == "login" || a.Name == "updateVirtualMachine" {
+		if requiresPostMethod[a.Name] {
 			pn("	resp, err := s.cs.newPostRequest(\"%s\", p.toURLValues())", a.Name)
 		} else {
 			pn("	resp, err := s.cs.newRequest(\"%s\", p.toURLValues())", a.Name)
