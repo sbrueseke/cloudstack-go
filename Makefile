@@ -23,7 +23,7 @@ mocks:
 	done
 
 test:
-	go test -v github.com/apache/cloudstack-go/v2/test
+	go test -v github.com/sbrueseke/cloudstack-go/v2/test
 
 MOCKGEN := mockgen
 mockgen: ## Download conversion-gen locally if necessary.
